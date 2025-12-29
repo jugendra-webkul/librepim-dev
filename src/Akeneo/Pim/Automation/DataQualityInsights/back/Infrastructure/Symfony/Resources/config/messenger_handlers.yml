@@ -17,6 +17,8 @@ services:
             - '@Akeneo\Pim\Automation\DataQualityInsights\Infrastructure\Persistence\Query\ProductEvaluation\GetProductModelIdsImpactedByAttributeGroupActivationQuery'
             - '@messenger.bus.default'
             - 50
+        tags:
+            - { name: messenger.message_handler }
 
     Akeneo\Pim\Automation\DataQualityInsights\Infrastructure\Messenger\LaunchProductAndProductModelEvaluationsMessageNormalizer:
         tags:

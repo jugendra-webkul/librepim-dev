@@ -335,6 +335,12 @@ services:
             - '@akeneo.pim.enrichment.product.grid.query.fetch_product_and_product_model_rows'
             - '@validator'
 
+    pim_enrich.controller.rest.product_and_product_model.search:
+        public: true
+        class: 'Akeneo\Pim\Enrichment\Bundle\Controller\InternalApi\ProductAndProductModel\SearchProductAndModelsController'
+        arguments:
+            - '@akeneo_elasticsearch.client.product_and_product_model'
+
     pim_enrich.controller.rest.versioning:
         public: true
         class: 'Akeneo\Pim\Enrichment\Bundle\Controller\InternalApi\VersioningController'
