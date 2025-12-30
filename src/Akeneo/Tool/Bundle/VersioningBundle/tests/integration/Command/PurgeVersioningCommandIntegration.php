@@ -54,7 +54,6 @@ class PurgeVersioningCommandIntegration extends TestCase
         $pattern = '/Step execution starting: id=(\d+), name=\[versioning_purge\]/';
         preg_match($pattern, $output->fetch(), $matches);
         $firstExecutionId = (int)$matches[1];
-        var_dump($firstExecutionId);
 
         // Set this execution at status 'STARTED'
         $this->setExecutionStatus($firstExecutionId, new BatchStatus(BatchStatus::STARTED));

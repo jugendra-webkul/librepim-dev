@@ -91,12 +91,12 @@ class OAuthStorage implements IOAuth2RefreshTokens, IOAuth2GrantUser, IOAuth2Gra
         $this->grantExtensions[$uri] = $grantExtension;
     }
 
-    public function getClient($clientId)
+    public function getClient($clientId): ClientInterface|null
     {
         return $this->clientManager->findClientByPublicId($clientId);
     }
 
-    public function checkClientCredentials(IOAuth2Client $client, $client_secret = null)
+    public function checkClientCredentials(IOAuth2Client $client, $client_secret = null): bool
     {
         if (!$client instanceof ClientInterface) {
             throw new \InvalidArgumentException('Client has to implement the ClientInterface');
@@ -105,7 +105,7 @@ class OAuthStorage implements IOAuth2RefreshTokens, IOAuth2GrantUser, IOAuth2Gra
         return $client->checkSecret($client_secret);
     }
 
-    public function checkClientCredentialsGrant(IOAuth2Client $client, $client_secret)
+    public function checkClientCredentialsGrant(IOAuth2Client $client, $client_secret): bool
     {
         return $this->checkClientCredentials($client, $client_secret);
     }
@@ -136,7 +136,7 @@ class OAuthStorage implements IOAuth2RefreshTokens, IOAuth2GrantUser, IOAuth2Gra
         return $token;
     }
 
-    public function checkRestrictedGrantType(IOAuth2Client $client, $grant_type)
+    public function checkRestrictedGrantType(IOAuth2Client $client, $grant_type): bool
     {
         if (!$client instanceof ClientInterface) {
             throw new \InvalidArgumentException('Client has to implement the ClientInterface');
@@ -145,7 +145,7 @@ class OAuthStorage implements IOAuth2RefreshTokens, IOAuth2GrantUser, IOAuth2Gra
         return in_array($grant_type, $client->getAllowedGrantTypes(), true);
     }
 
-    public function checkUserCredentials(IOAuth2Client $client, $username, $password)
+    public function checkUserCredentials(IOAuth2Client $client, $username, $password): array|bool
     {
         if (!$client instanceof ClientInterface) {
             throw new \InvalidArgumentException('Client has to implement the ClientInterface');

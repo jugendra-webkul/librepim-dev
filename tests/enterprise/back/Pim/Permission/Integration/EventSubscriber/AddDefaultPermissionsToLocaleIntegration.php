@@ -124,7 +124,7 @@ WHERE user_group_id = :user_group_id
 AND locale_id = :locale_id
 SQL;
 
-        $permissions = $this->connection->fetchAssoc($query, [
+        $permissions = $this->connection->fetchAssociative($query, [
             'user_group_id' => $userGroupId,
             'locale_id' => $localeId,
         ]);

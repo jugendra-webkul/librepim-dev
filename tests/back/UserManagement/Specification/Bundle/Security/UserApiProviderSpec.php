@@ -7,7 +7,7 @@ use Akeneo\UserManagement\Component\Repository\UserRepositoryInterface;
 use PhpSpec\ObjectBehavior;
 use Symfony\Component\Security\Core\Exception\DisabledException;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
-use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\InMemoryUser;
 use Symfony\Component\Security\Core\User\User;
 
@@ -29,7 +29,7 @@ class UserApiProviderSpec extends ObjectBehavior
     function it_throws_an_exception_if_username_does_not_exist(UserRepositoryInterface $userRepository)
     {
         $userRepository->findOneByIdentifier('jean-pacôme')->willReturn(null);
-        $this->shouldThrow(UsernameNotFoundException::class)
+        $this->shouldThrow(UserNotFoundException::class)
             ->during('loadUserByUsername', ['jean-pacôme']);
     }
 
@@ -46,7 +46,7 @@ class UserApiProviderSpec extends ObjectBehavior
     {
         $jobUser->isApiUser()->willReturn(false);
         $userRepository->findOneByIdentifier('job-user')->willReturn($jobUser);
-        $this->shouldThrow(UsernameNotFoundException::class)
+        $this->shouldThrow(UserNotFoundException::class)
             ->during('loadUserByUsername', ['job-user']);
     }
 
@@ -71,7 +71,7 @@ class UserApiProviderSpec extends ObjectBehavior
         $julia->getId()->willReturn(42);
         $userRepository->find(42)->willReturn(null);
 
-        $this->shouldThrow(UsernameNotFoundException::class)
+        $this->shouldThrow(UserNotFoundException::class)
             ->during('refreshUser', [$julia]);
     }
 }

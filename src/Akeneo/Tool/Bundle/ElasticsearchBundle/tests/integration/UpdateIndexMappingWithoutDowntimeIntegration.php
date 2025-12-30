@@ -32,7 +32,7 @@ class UpdateIndexMappingWithoutDowntimeIntegration extends TestCase
         $indexConfigurationLoader = $this->get('akeneo_elasticsearch.client.product_and_product_model.index_configuration.files');
         $productAndProductModelIndexAlias = $this->getParameter('product_and_product_model_index_name');
 
-        $aliasesBeforeMigration = array_map(fn (array $index) => $index['alias'], $this->client->cat()->aliases());
+        $aliasesBeforeMigration = array_map(fn (array $index) => $index['alias'], $this->client->cat()->aliases(['format' => 'json'])->asArray());
         $indexNameBeforeMigration = $this->getIndexNameFromAlias($productAndProductModelIndexAlias);
 
         /** @var ProductQueryBuilderFactory $pqb */
@@ -54,7 +54,7 @@ class UpdateIndexMappingWithoutDowntimeIntegration extends TestCase
             ],
         );
 
-        $aliasesAfterMigration = array_map(fn (array $index) => $index['alias'], $this->client->cat()->aliases());
+        $aliasesAfterMigration = array_map(fn (array $index) => $index['alias'], $this->client->cat()->aliases(['format' => 'json'])->asArray());
         $indexNameAfterMigration = $this->getIndexNameFromAlias($productAndProductModelIndexAlias);
 
         Assert::assertEqualsCanonicalizing($aliasesBeforeMigration, $aliasesAfterMigration);
@@ -107,7 +107,7 @@ class UpdateIndexMappingWithoutDowntimeIntegration extends TestCase
 
     private function getIndexNameFromAlias(string $indexAlias): ?string
     {
-        $aliases = $this->client->indices()->getAlias(['name' => $indexAlias]);
+        $aliases = $this->client->indices()->getAlias(['name' => $indexAlias])->asArray();
 
         return array_keys($aliases)[0] ?? null;
     }

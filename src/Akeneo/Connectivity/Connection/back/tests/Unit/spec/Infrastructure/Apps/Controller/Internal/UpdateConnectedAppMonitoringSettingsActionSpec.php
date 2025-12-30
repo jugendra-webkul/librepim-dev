@@ -45,6 +45,7 @@ class UpdateConnectedAppMonitoringSettingsActionSpec extends ObjectBehavior
         Request $request,
     ): void {
         $featureFlag->isEnabled()->willReturn(false);
+        $request->isXmlHttpRequest()->willReturn(true);
 
         $this
             ->shouldThrow(new NotFoundHttpException())
@@ -56,6 +57,7 @@ class UpdateConnectedAppMonitoringSettingsActionSpec extends ObjectBehavior
         Request $request,
     ): void {
         $featureFlag->isEnabled()->willReturn(true);
+        $request->isXmlHttpRequest()->willReturn(false);
 
         $this->__invoke($request, 'foo')
             ->shouldBeLike(new RedirectResponse('/'));

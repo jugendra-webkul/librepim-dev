@@ -39,6 +39,8 @@ class GetAppActivateUrlActionSpec extends ObjectBehavior
         FeatureFlag $marketplaceActivateFeatureFlag,
         Request $request,
     ): void {
+        $request->isXmlHttpRequest()->willReturn(false);
+
         $this->__invoke($request, 'foo')
             ->shouldBeLike(new RedirectResponse('/'));
     }

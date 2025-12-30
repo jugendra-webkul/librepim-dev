@@ -12,6 +12,7 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Stamp\RedeliveryStamp;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use Prophecy\Argument;
 
 /**
  * @copyright 2020 Akeneo SAS (http://www.akeneo.com)
@@ -21,6 +22,8 @@ class JsonSerializerSpec extends ObjectBehavior
 {
     public function let(NormalizerInterface $normalizer, DenormalizerInterface $denormalizer): void
     {
+        $normalizer->getSupportedTypes(Argument::any())->willReturn(['*' => true]);
+        $denormalizer->getSupportedTypes(Argument::any())->willReturn(['*' => true]);
         $this->beConstructedWith([$normalizer, $denormalizer]);
     }
 
@@ -38,6 +41,8 @@ class JsonSerializerSpec extends ObjectBehavior
             ]
         ];
 
+        $denormalizer->supportsDenormalization(null, \stdClass::class, 'json', [])
+            ->willReturn(false);
         $denormalizer->supportsDenormalization(['some_property' => 'Some value!'], \stdClass::class, 'json', [])
             ->willReturn(true);
 

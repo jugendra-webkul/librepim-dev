@@ -36,6 +36,71 @@ class TestLogger extends AbstractLogger
         return false;
     }
 
+    public function hasInfo(array $record): bool
+    {
+        return $this->hasRecordThatContains($record, 'info');
+    }
+
+    public function hasError(array $record): bool
+    {
+        return $this->hasRecordThatContains($record, 'error');
+    }
+
+    public function hasWarning(array $record): bool
+    {
+        return $this->hasRecordThatContains($record, 'warning');
+    }
+
+    public function hasNotice(array $record): bool
+    {
+        return $this->hasRecordThatContains($record, 'notice');
+    }
+
+    public function hasCritical(array $record): bool
+    {
+        return $this->hasRecordThatContains($record, 'critical');
+    }
+
+    public function hasAlert(array $record): bool
+    {
+        return $this->hasRecordThatContains($record, 'alert');
+    }
+
+    public function hasEmergency(array $record): bool
+    {
+        return $this->hasRecordThatContains($record, 'emergency');
+    }
+
+    public function hasDebug(array $record): bool
+    {
+        return $this->hasRecordThatContains($record, 'debug');
+    }
+
+    private function hasRecordThatContains(array $record, string $level): bool
+    {
+        foreach ($this->records as $r) {
+            if ($r['level'] !== $level) {
+                continue;
+            }
+
+            if (isset($record['message']) && $r['message'] !== $record['message']) {
+                continue;
+            }
+
+            if (isset($record['context'])) {
+                foreach ($record['context'] as $key => $value) {
+                    if (!isset($r['context'][$key]) || $r['context'][$key] !== $value) {
+                        continue 2;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     /** @return array<int, array{level: mixed, message: mixed, context: array}> */
     public function getRecords(): array
     {

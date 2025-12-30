@@ -40,7 +40,7 @@ class UpdateMappingIndexCommand extends Command
         parent::__construct(self::$defaultName);
     }
 
-    public function configure()
+    public function configure(): void
     {
         $this
             ->addArgument(

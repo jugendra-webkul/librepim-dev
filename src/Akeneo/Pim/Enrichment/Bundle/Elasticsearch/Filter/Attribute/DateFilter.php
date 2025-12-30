@@ -252,7 +252,17 @@ class DateFilter extends AbstractAttributeFilter implements AttributeFilterInter
         if (!$dateTime instanceof \DateTimeInterface) {
             $dateTime = \DateTimeImmutable::createFromFormat(static::DATETIME_FORMAT, $dateTime);
 
-            if (false === $dateTime || 0 < $dateTime->getLastErrors()['warning_count']) {
+            if (false === $dateTime) {
+                throw InvalidPropertyException::dateExpected(
+                    $field,
+                    static::HUMAN_DATETIME_FORMAT,
+                    static::class,
+                    $value
+                );
+            }
+
+            $errors = $dateTime->getLastErrors();
+            if (false !== $errors && isset($errors['warning_count']) && 0 < $errors['warning_count']) {
                 throw InvalidPropertyException::dateExpected(
                     $field,
                     static::HUMAN_DATETIME_FORMAT,

@@ -73,7 +73,7 @@ final class UpdateIndexMapping
 
     private function resetIndexSettings(Indices $indicesClient, string $indexName, string $oldIndexNameOrAlias): UpdateIndexMapping
     {
-        $oldIndexSettings = $indicesClient->getSettings(['index' => $oldIndexNameOrAlias]);
+        $oldIndexSettings = $indicesClient->getSettings(['index' => $oldIndexNameOrAlias])->asArray();
         $oldIndexSettings = array_shift($oldIndexSettings)['settings'];
 
         $indicesClient->putSettings([
@@ -106,7 +106,7 @@ final class UpdateIndexMapping
 
     private function moveFromAliasToAlias(Indices $indicesClient, string $newIndexName, string $aliasName): void
     {
-        $aliases = $indicesClient->getAlias(['name' => $aliasName]);
+        $aliases = $indicesClient->getAlias(['name' => $aliasName])->asArray();
         $oldIndexName = array_keys($aliases)[0];
 
         $indicesClient->updateAliases([

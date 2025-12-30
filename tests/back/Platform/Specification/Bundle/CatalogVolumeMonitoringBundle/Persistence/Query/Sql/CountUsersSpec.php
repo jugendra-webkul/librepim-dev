@@ -30,10 +30,12 @@ class CountUsersSpec extends ObjectBehavior
         $this->shouldImplement(CountQuery::class);
     }
 
-    function it_gets_count_volume(Connection $connection, Result $result)
+    function it_gets_count_volume(Connection $connection, \Doctrine\DBAL\Driver\Result $driverResult)
     {
+        $driverResult->fetchAssociative()->willReturn(['count' => '25']);
+        $result = new Result($driverResult->getWrappedObject(), $connection->getWrappedObject());
+
         $connection->executeQuery(Argument::type('string'), ['type' => User::TYPE_USER])->willReturn($result);
-        $result->fetchAssociative()->willReturn(['count' => '25']);
         $this->fetch()->shouldBeLike(new CountVolume(25, 'count_users'));
     }
 }

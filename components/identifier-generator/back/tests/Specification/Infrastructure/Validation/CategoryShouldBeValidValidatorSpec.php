@@ -10,6 +10,7 @@ use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Context\ExecutionContext;
+use Symfony\Component\Validator\Validator\ContextualValidatorInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
@@ -21,12 +22,12 @@ class CategoryShouldBeValidValidatorSpec extends ObjectBehavior
     public function let(
         ValidatorInterface $globalValidator,
         ExecutionContext $context,
-        ValidatorInterface $validator
+        ContextualValidatorInterface $contextualValidator
     ): void {
         $this->beConstructedWith($globalValidator);
         $this->initialize($context);
 
-        $globalValidator->inContext($context)->willReturn($validator);
+        $globalValidator->inContext($context)->willReturn($contextualValidator);
     }
 
     public function it_is_initializable(): void
@@ -41,47 +42,47 @@ class CategoryShouldBeValidValidatorSpec extends ObjectBehavior
     }
 
     public function it_should_not_validate_if_condition_is_not_an_array(
-        ValidatorInterface $validator,
+        ContextualValidatorInterface $contextualValidator,
     ): void {
         $condition = 'foo';
-        $validator->validate(Argument::any())->shouldNotBeCalled();
+        $contextualValidator->validate(Argument::any())->shouldNotBeCalled();
         $this->validate($condition, new CategoryShouldBeValid());
     }
 
     public function it_should_not_validate_other_conditions(
-        ValidatorInterface $validator,
+        ContextualValidatorInterface $contextualValidator,
     ): void {
         $condition = ['type' => 'foo'];
 
-        $validator->validate(Argument::any())->shouldNotBeCalled();
+        $contextualValidator->validate(Argument::any())->shouldNotBeCalled();
         $this->validate($condition, new CategoryShouldBeValid());
     }
 
     public function it_should_only_validate_condition_keys(
-        ValidatorInterface $validator,
+        ContextualValidatorInterface $contextualValidator,
     ): void {
         $condition = ['type' => 'category', 'foo' => 'bar'];
 
-        $validator->validate($condition, Argument::any())->shouldBeCalledTimes(1);
+        $contextualValidator->validate($condition, Argument::any())->shouldBeCalledTimes(1)->willReturn($contextualValidator);
         $this->validate($condition, new CategoryShouldBeValid());
     }
 
     public function it_should_validate_condition_keys_without_value(
-        ValidatorInterface $validator,
+        ContextualValidatorInterface $contextualValidator,
     ): void {
         $condition = ['type' => 'category', 'operator' => 'CLASSIFIED'];
 
-        $validator->validate($condition, Argument::any())->shouldBeCalledTimes(2);
+        $contextualValidator->validate($condition, Argument::any())->shouldBeCalledTimes(2)->willReturn($contextualValidator);
         $this->validate($condition, new CategoryShouldBeValid());
     }
 
     public function it_should_validate_condition_keys_with_value_and_categories(
-        ValidatorInterface $validator,
+        ContextualValidatorInterface $contextualValidator,
         ExecutionContext $context,
     ): void {
         $condition = ['type' => 'category', 'operator' => 'IN', 'value' => ['shirts']];
 
-        $validator->validate($condition, Argument::any())->shouldBeCalledTimes(2);
+        $contextualValidator->validate($condition, Argument::any())->shouldBeCalledTimes(2)->willReturn($contextualValidator);
         $context->buildViolation((string)Argument::any())->shouldNotBeCalled();
 
         $this->validate($condition, new CategoryShouldBeValid());

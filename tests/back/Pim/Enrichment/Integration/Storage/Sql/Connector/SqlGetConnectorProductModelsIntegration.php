@@ -788,7 +788,7 @@ class SqlGetConnectorProductModelsIntegration extends TestCase
 
     private function getIdAndDatesFromProductModelCode(string $productModelCode): array
     {
-        return $this->get('database_connection')->fetchAssoc(
+        return $this->get('database_connection')->fetchAssociative(
             'SELECT id, created, updated FROM pim_catalog_product_model where code = :code',
             [
                 'code' => $productModelCode,

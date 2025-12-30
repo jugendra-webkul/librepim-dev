@@ -30,10 +30,12 @@ class AverageMaxLocalizableAttributesPerFamilySpec extends ObjectBehavior
         $this->shouldImplement(AverageMaxQuery::class);
     }
 
-    function it_gets_average_and_max_volume(Connection $connection, Result $statement)
+    function it_gets_average_and_max_volume(Connection $connection, \Doctrine\DBAL\Driver\Result $driverResult)
     {
-        $connection->executeQuery(Argument::type('string'))->willReturn($statement);
-        $statement->fetchAssociative()->willReturn(['average' => '5', 'max' => '13']);
+        $driverResult->fetchAssociative()->willReturn(['average' => '5', 'max' => '13']);
+        $result = new Result($driverResult->getWrappedObject(), $connection->getWrappedObject());
+
+        $connection->executeQuery(Argument::type('string'))->willReturn($result);
         $this->fetch()->shouldBeLike(new AverageMaxVolumes(13, 5, 'average_max_localizable_attributes_per_family'));
     }
 }

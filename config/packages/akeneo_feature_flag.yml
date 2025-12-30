@@ -14,3 +14,4 @@ akeneo_feature_flag:
         pause_jobs: 'akeneo.job.pause_jobs.feature'
         reset_pim: 'akeneo.installer.reset_pim.feature'
         segment_integration: 'akeneo.feature_flag.service.only_saas_feature'
+        permission: 'permission.feature'

@@ -30,7 +30,7 @@ pim_api_category_partial_update_list:
     path: /categories
     defaults:
         _controller: 'pim_api.controller.category::partialUpdateListAction'
-        _format: json}
+        _format: json
     methods: [PATCH]
 
 pim_api_category_media_file_download:

@@ -88,7 +88,7 @@ class ListProductsByUuidController
             throw new UnprocessableEntityHttpException($e->getMessage(), $e);
         } catch (ClientResponseException $e) {
             if ($e->getResponse()->getStatusCode() === 400) {
-                $message = json_decode($e->getMessage(), true);
+                $message = json_decode((string) $e->getResponse()->getBody(), true);
                 if (
                     null !== $message && isset($message['error']['root_cause'][0]['type'])
                     && 'illegal_argument_exception' === $message['error']['root_cause'][0]['type']

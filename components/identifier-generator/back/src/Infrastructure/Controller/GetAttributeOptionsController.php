@@ -46,7 +46,7 @@ final class GetAttributeOptionsController
                 search: $request->query->get('search', ''),
                 page: \intval($request->query->get('page', '1')),
                 limit: \intval($request->query->get('limit', '20')),
-                includeCodes: $request->query->get('codes') ? (array) $request->query->get('codes') : null,
+                includeCodes: isset($request->query->all()['codes']) ? (array) $request->query->all()['codes'] : null,
             )
         );
     }

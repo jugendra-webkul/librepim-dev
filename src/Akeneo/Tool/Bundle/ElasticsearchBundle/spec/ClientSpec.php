@@ -8,12 +8,18 @@ use Akeneo\Tool\Bundle\ElasticsearchBundle\Exception\MissingIdentifierException;
 use Akeneo\Tool\Bundle\ElasticsearchBundle\IndexConfiguration\IndexConfiguration;
 use Akeneo\Tool\Bundle\ElasticsearchBundle\IndexConfiguration\Loader;
 use Akeneo\Tool\Bundle\ElasticsearchBundle\Refresh;
-use Elastic\Elasticsearch\Client as NativeClient;
 use Elastic\Elasticsearch\ClientBuilder;
 use Elastic\Elasticsearch\Exception\ClientResponseException;
 use Elastic\Elasticsearch\Endpoints\Indices;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
+
+use Elastic\Transport\Transport;
+use Psr\Log\LoggerInterface;
+use ReflectionClass;
+use Psr\Http\Client\ClientInterface as HttpClientInterface;
+use Elastic\Transport\NodePool\NodePoolInterface;
+use Psr\Http\Message\ResponseInterface;
 
 class ClientSpec extends ObjectBehavior
 {
@@ -22,11 +28,29 @@ class ClientSpec extends ObjectBehavior
         $this->shouldHaveType(Client::class);
     }
 
-    function let(NativeClient $client, ClientBuilder $clientBuilder, Loader $indexConfigurationLoader)
-    {
-        $this->beConstructedWith($clientBuilder, $indexConfigurationLoader, ['localhost:9200'], 'an_index_name');
+    function let(
+        MockElasticClientInterface $client,
+        ClientBuilder $clientBuilder,
+        Loader $indexConfigurationLoader,
+        HttpClientInterface $httpClient,
+        NodePoolInterface $nodePool,
+        LoggerInterface $logger
+    ) {
+        // Create a real client to satisfy the type hint of ClientBuilder::build()
+        $transport = new Transport($httpClient->getWrappedObject(), $nodePool->getWrappedObject(), $logger->getWrappedObject());
+        $realClient = new \Elastic\Elasticsearch\Client($transport, $logger->getWrappedObject());
+
         $clientBuilder->setHosts(Argument::any())->willReturn($clientBuilder);
-        $clientBuilder->build()->willReturn($client);
+        $clientBuilder->build()->willReturn($realClient);
+
+        $this->beConstructedWith($clientBuilder, $indexConfigurationLoader, ['localhost:9200'], 'an_index_name');
+
+        // Force instantiation and replace the client property with our mock
+        $wrappedObject = $this->getWrappedObject();
+        $reflection = new ReflectionClass($wrappedObject);
+        $property = $reflection->getProperty('client');
+        $property->setAccessible(true);
+        $property->setValue($wrappedObject, $client->getWrappedObject());
     }
 
     public function it_indexes_a_document($client)
@@ -314,11 +338,16 @@ class ClientSpec extends ObjectBehavior
     }
 
     function it_split_bulk_index_when_size_is_more_than_max_batch_size(
-        NativeClient $client,
+        MockElasticClientInterface $client,
         ClientBuilder $clientBuilder,
         Loader $indexConfigurationLoader
     ) {
-        $this->beConstructedWith($clientBuilder, $indexConfigurationLoader, ['localhost:9200'], 'an_index_name', '', 200);
+        // Use Reflection to set maxChunkSize instead of re-constructing
+        $wrappedObject = $this->getWrappedObject();
+        $reflection = new ReflectionClass($wrappedObject);
+        $property = $reflection->getProperty('maxChunkSize');
+        $property->setAccessible(true);
+        $property->setValue($wrappedObject, 200);
 
         $client->bulk([
             'body' => [
@@ -389,7 +418,7 @@ class ClientSpec extends ObjectBehavior
         ]);
     }
 
-    function it_retries_bulk_index_request_when_an_error_occurred(NativeClient $client)
+    function it_retries_bulk_index_request_when_an_error_occurred(MockElasticClientInterface $client)
     {
         $isFirstCall = true;
         $client->bulk([
@@ -403,9 +432,19 @@ class ClientSpec extends ObjectBehavior
         ->will(function () use (&$isFirstCall) {
             if ($isFirstCall) {
                 $isFirstCall = false;
+                
+                $prophet = new \Prophecy\Prophet();
+                $psrResponse = $prophet->prophesize(ResponseInterface::class);
+                $psrResponse->getStatusCode()->willReturn(400);
+                $psrResponse->getBody()->willReturn('error body');
+                $psrResponse->getReasonPhrase()->willReturn('Bad Request');
+                
                 $response = new \Elastic\Elasticsearch\Response\Elasticsearch();
-                $response->setStatusCode(400);
-                throw new ClientResponseException($response);
+                try {
+                    $response->setResponse($psrResponse->reveal());
+                } catch (ClientResponseException $e) {
+                    throw $e;
+                }
             }
 
             return ['took' => 1, 'errors' => false, 'items' => [['item_value1']]];
@@ -422,10 +461,21 @@ class ClientSpec extends ObjectBehavior
         ]);
     }
 
-    function it_retries_bulk_index_request_by_splitting_body_when_an_error_occurred(NativeClient $client)
+    function it_retries_bulk_index_request_by_splitting_body_when_an_error_occurred(MockElasticClientInterface $client)
     {
-        $exception = new ClientResponseException(new \Elastic\Elasticsearch\Response\Elasticsearch());
-        $exception->getResponse()->setStatusCode(400);
+        $prophet = new \Prophecy\Prophet();
+        $psrResponse = $prophet->prophesize(ResponseInterface::class);
+        $psrResponse->getStatusCode()->willReturn(400);
+        $psrResponse->getBody()->willReturn('error body');
+        $psrResponse->getReasonPhrase()->willReturn('Bad Request');
+        
+        $response = new \Elastic\Elasticsearch\Response\Elasticsearch();
+        $exception = null;
+        try {
+            $response->setResponse($psrResponse->reveal());
+        } catch (ClientResponseException $e) {
+            $exception = $e;
+        }
 
         $client->bulk([
             'body' => [
@@ -536,4 +586,18 @@ class ClientSpec extends ObjectBehavior
         $this->shouldThrow(new MissingIdentifierException('Missing "identifier" key in document'))
             ->during('bulkIndexes', [$documents, 'identifier', Refresh::waitFor()]);
     }
+}
+
+interface MockElasticClientInterface extends \Elastic\Elasticsearch\ClientInterface
+{
+    public function index(array $params);
+    public function bulk(array $params);
+    public function get(array $params);
+    public function search(array $params);
+    public function msearch(array $params);
+    public function count(array $params);
+    public function delete(array $params);
+    public function deleteByQuery(array $params);
+    public function updateByQuery(array $params);
+    public function indices();
 }

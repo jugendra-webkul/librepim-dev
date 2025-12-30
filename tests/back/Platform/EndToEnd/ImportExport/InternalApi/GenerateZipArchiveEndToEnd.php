@@ -54,10 +54,8 @@ class GenerateZipArchiveEndToEnd extends InternalApiTestCase
 
         // get the content of the generated zip file
         $this->client->followMetaRefresh(true);
-        \ob_start();
         $this->client->request('GET', \sprintf('job/%s/download/zip', $jobExecutionId));
-        $binaryContent = \ob_get_contents();
-        \ob_end_clean();
+        $binaryContent = $this->client->getInternalResponse()->getContent();
 
         Assert::assertTrue($this->client->getResponse()->isOk());
         Assert::assertNotEmpty($binaryContent);

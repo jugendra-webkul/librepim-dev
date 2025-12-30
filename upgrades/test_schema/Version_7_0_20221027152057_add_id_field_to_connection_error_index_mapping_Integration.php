@@ -115,7 +115,7 @@ class Version_7_0_20221027152057_add_id_field_to_connection_error_index_mapping_
     {
         $mapping = current($this->nativeClient->indices()->getMapping(
             ['index' => $this->connectionErrorClient->getIndexName()]
-        ));
+        )->asArray());
 
         return $mapping['mappings']['properties'] ?? [];
     }

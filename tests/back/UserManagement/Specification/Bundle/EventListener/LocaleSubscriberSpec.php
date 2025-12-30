@@ -6,6 +6,7 @@ use Akeneo\Channel\Infrastructure\Component\Model\LocaleInterface;
 use Akeneo\UserManagement\Component\Model\UserInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Result;
+use Doctrine\DBAL\Driver\Result as DriverResult;
 use Doctrine\ORM\EntityManager;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
@@ -58,7 +59,7 @@ class LocaleSubscriberSpec extends ObjectBehavior
         Request $request,
         SessionInterface $session,
         Connection $connection,
-        Result $result
+        DriverResult $driverResult
     ) {
         $event->getRequest()->willReturn($request);
         $request->hasSession()->willReturn(true);
@@ -66,9 +67,11 @@ class LocaleSubscriberSpec extends ObjectBehavior
         $session->get('_locale')->willReturn(null);
 
         $em->getConnection()->willReturn($connection);
+        
+        $result = new Result($driverResult->getWrappedObject(), $connection->getWrappedObject());
         $connection->executeQuery('SELECT value FROM oro_config_value WHERE name = "language" AND section = "pim_ui" LIMIT 1')->willReturn($result);
 
-        $result->fetchOne()->willReturn(false);
+        $driverResult->fetchOne()->willReturn(false);
 
         $request->setLocale()->shouldNotBeCalled();
 
@@ -81,7 +84,7 @@ class LocaleSubscriberSpec extends ObjectBehavior
         Request $request,
         SessionInterface $session,
         Connection $connection,
-        Result $result
+        DriverResult $driverResult
     ) {
         $event->getRequest()->willReturn($request);
         $request->hasSession()->willReturn(true);
@@ -89,9 +92,11 @@ class LocaleSubscriberSpec extends ObjectBehavior
         $session->get('_locale')->willReturn(null);
 
         $em->getConnection()->willReturn($connection);
+        
+        $result = new Result($driverResult->getWrappedObject(), $connection->getWrappedObject());
         $connection->executeQuery('SELECT value FROM oro_config_value WHERE name = "language" AND section = "pim_ui" LIMIT 1')->willReturn($result);
 
-        $result->fetchOne()->willReturn('fr_FR');
+        $driverResult->fetchOne()->willReturn('fr_FR');
 
         $request->setLocale('fr_FR')->shouldBeCalled();
 

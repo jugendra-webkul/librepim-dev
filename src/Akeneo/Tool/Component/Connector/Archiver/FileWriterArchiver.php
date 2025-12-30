@@ -103,16 +103,23 @@ class FileWriterArchiver extends AbstractFilesystemArchiver
             );
 
             try {
-                $stream = $this->filesystemProvider->getFilesystem($fileToArchive->sourceStorage())->readStream(
-                    $fileToArchive->sourceKey(),
-                );
+                if ($fileToArchive->isLocalFile()) {
+                    $stream = @fopen($fileToArchive->sourceKey(), 'r');
+                    if (false === $stream) {
+                        throw new \RuntimeException(sprintf('Unable to open local file "%s" for reading', $fileToArchive->sourceKey()));
+                    }
+                } else {
+                    $stream = $this->filesystemProvider->getFilesystem($fileToArchive->sourceStorage())->readStream(
+                        $fileToArchive->sourceKey(),
+                    );
+                }
 
                 $this->archivistFilesystem->writeStream($archivedFilePath, $stream);
 
                 if (\is_resource($stream)) {
                     \fclose($stream);
                 }
-            } catch (UnableToReadFile $e) {
+            } catch (\Throwable $e) {
                 $this->logger->warning(
                     'The remote file could not be read from the remote filesystem',
                     [

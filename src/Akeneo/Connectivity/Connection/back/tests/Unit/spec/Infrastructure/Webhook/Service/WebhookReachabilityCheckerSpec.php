@@ -54,7 +54,7 @@ class WebhookReachabilityCheckerSpec extends ObjectBehavior
             $object->hasHeader(RequestHeaders::HEADER_REQUEST_USERAGENT) &&
             $this->getWrappedObject()::POST === $object->getMethod() &&
             $validUrl === (string) $object->getUri()), ['allow_redirects' => false])->willReturn(new Response(200, [], null, '1.1', 'OK'));
-        $validator->validate($validUrl, Argument::any())->willReturn([]);
+        $validator->validate($validUrl, Argument::any())->willReturn(new ConstraintViolationList());
 
         $resultUrlReachabilityStatus = $this->check($validUrl, $secret);
 
@@ -124,7 +124,7 @@ class WebhookReachabilityCheckerSpec extends ObjectBehavior
             $object->hasHeader(RequestHeaders::HEADER_REQUEST_USERAGENT) &&
             $this->getWrappedObject()::POST === $object->getMethod() &&
             $validUrl === (string) $object->getUri()), ['allow_redirects' => false])->willReturn(new Response(301, [], null, '1.1', 'Moved Permanently'));
-        $validator->validate($validUrl, Argument::any())->willReturn([]);
+        $validator->validate($validUrl, Argument::any())->willReturn(new ConstraintViolationList());
 
         $resultUrlReachabilityStatus = $this->check($validUrl, $secret);
 
@@ -152,7 +152,7 @@ class WebhookReachabilityCheckerSpec extends ObjectBehavior
             $object->hasHeader(RequestHeaders::HEADER_REQUEST_USERAGENT) &&
             $this->getWrappedObject()::POST === $object->getMethod() &&
             $validUrl === (string) $object->getUri()), ['allow_redirects' => false])->willThrow($requestException);
-        $validator->validate($validUrl, Argument::any())->willReturn([]);
+        $validator->validate($validUrl, Argument::any())->willReturn(new ConstraintViolationList());
 
         $resultUrlReachabilityStatus = $this->check($validUrl, $secret);
 
@@ -178,7 +178,7 @@ class WebhookReachabilityCheckerSpec extends ObjectBehavior
             $object->hasHeader(RequestHeaders::HEADER_REQUEST_USERAGENT) &&
             $this->getWrappedObject()::POST === $object->getMethod() &&
             $validUrl === (string) $object->getUri()), ['allow_redirects' => false])->willThrow($connectException);
-        $validator->validate($validUrl, Argument::any())->willReturn([]);
+        $validator->validate($validUrl, Argument::any())->willReturn(new ConstraintViolationList());
 
         $resultUrlReachabilityStatus = $this->check($validUrl, $secret);
 
@@ -203,7 +203,7 @@ class WebhookReachabilityCheckerSpec extends ObjectBehavior
             $object->hasHeader(RequestHeaders::HEADER_REQUEST_USERAGENT) &&
             $this->getWrappedObject()::POST === $object->getMethod() &&
             $validUrl === (string) $object->getUri()), ['allow_redirects' => false])->willThrow($transferException);
-        $validator->validate($validUrl, Argument::any())->willReturn([]);
+        $validator->validate($validUrl, Argument::any())->willReturn(new ConstraintViolationList());
 
         $resultUrlReachabilityStatus = $this->check($validUrl, $secret);
 

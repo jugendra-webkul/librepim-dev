@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Akeneo\Pim\Enrichment\Bundle\Controller\ExternalApi;
 
+use Akeneo\Connectivity\Connection\Application\ErrorManagement\Service\CollectApiError;
 use Akeneo\Pim\Enrichment\Bundle\Event\ProductValidationErrorEvent;
 use Akeneo\Pim\Enrichment\Bundle\Event\TechnicalErrorEvent;
 use Akeneo\Pim\Enrichment\Bundle\EventSubscriber\Product\OnSave\ApiAggregatorForProductPostSaveEventSubscriber;
@@ -114,7 +115,8 @@ class ProductController
         private GetProductsWithCompletenessesInterface $getProductsWithCompletenesses,
         private SecurityFacade $security,
         private ValidatorInterface $validator,
-        private SqlFindProductUuids $findProductUuids
+        private SqlFindProductUuids $findProductUuids,
+        private CollectApiError $collectApiError
     ) {
     }
 
@@ -171,9 +173,10 @@ class ProductController
             throw new UnprocessableEntityHttpException($e->getMessage(), $e);
         } catch (ClientResponseException $e) {
             if ($e->getResponse()->getStatusCode() === 400) {
-                $message = json_decode($e->getMessage(), true);
+                $message = json_decode((string) $e->getResponse()->getBody(), true);
                 if (
-                    null !== $message && isset($message['error']['root_cause'][0]['type'])
+                    null !== $message
+                    && isset($message['error']['root_cause'][0]['type'])
                     && 'illegal_argument_exception' === $message['error']['root_cause'][0]['type']
                     && 0 === strpos($message['error']['root_cause'][0]['reason'], 'Result window is too large, from + size must be less than or equal to:')
                 ) {
@@ -420,6 +423,7 @@ class ProductController
                 ]);
             }
             $this->apiAggregatorForProductPostSave->deactivate();
+            $this->collectApiError->flush();
         });
     }
 

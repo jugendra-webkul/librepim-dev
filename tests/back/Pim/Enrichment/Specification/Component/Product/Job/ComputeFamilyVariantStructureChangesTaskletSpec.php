@@ -189,6 +189,10 @@ class ComputeFamilyVariantStructureChangesTaskletSpec extends ObjectBehavior
         $keepOnlyValuesForVariation->updateEntitiesWithFamilyVariant([$variantProduct1])->shouldBeCalled();
         $keepOnlyValuesForVariation->updateEntitiesWithFamilyVariant([$variantProduct2])->shouldBeCalled();
         $keepOnlyValuesForVariation->updateEntitiesWithFamilyVariant([$variantProduct3])->shouldBeCalled();
+
+        $productViolation->getMessage()->willReturn('error message');
+        $productModelViolation->getMessage()->willReturn('error message');
+
         $validator->validate($variantProduct1)->shouldBeCalled()->willReturn(new ConstraintViolationList());
         $validator->validate($variantProduct2)->shouldBeCalled()->willReturn(new ConstraintViolationList([$productViolation->getWrappedObject()]));
         $validator->validate($variantProduct3)->shouldBeCalled()->willReturn(new ConstraintViolationList());

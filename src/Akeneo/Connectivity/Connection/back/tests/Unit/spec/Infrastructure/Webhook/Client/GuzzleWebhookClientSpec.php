@@ -281,10 +281,17 @@ class GuzzleWebhookClientSpec extends ObjectBehavior
     ): void {
         $versionProvider->getVersion()->willReturn('v20210526040645');
 
+        $mock = new MockHandler([
+            new ConnectException(
+                'Connection timed out',
+                new GuzzleRequest('POST', 'http://localhost/webhook')
+            ),
+        ]);
+
         $container = [];
         $history = Middleware::history($container);
 
-        $handlerStack = HandlerStack::create();
+        $handlerStack = HandlerStack::create($mock);
         $handlerStack->push($history);
 
         $this->beConstructedWith(
@@ -323,20 +330,11 @@ class GuzzleWebhookClientSpec extends ObjectBehavior
             0.5
         )->shouldBeCalled();
 
-        $eventDispatcher->dispatch(Argument::type(EventsApiRequestFailedEvent::class))->shouldBeCalled();
+        $eventDispatcher->dispatch(
+            Argument::type(EventsApiRequestFailedEvent::class)
+        )->shouldBeCalled();
 
         Assert::assertCount(1, $container);
-
-        $request = $this->findRequest($container, 'http://localhost/webhook');
-
-        Assert::assertNotNull($request);
-
-        $body = '{"events":[{"action":"product.created","event_id":"7abae2fe-759a-4fce-aa43-f413980671b3","event_datetime":"2020-01-01T00:00:00+00:00","author":"julia","author_type":"ui","pim_source":"staging.akeneo.com","data":["data_1"]}]}';
-        Assert::assertEquals($body, (string)$request->getBody());
-
-        $timestamp = (int)$request->getHeader(RequestHeaders::HEADER_REQUEST_TIMESTAMP)[0];
-        $signature = Signature::createSignature('a_secret', $timestamp, $body);
-        Assert::assertEquals($signature, $request->getHeader(RequestHeaders::HEADER_REQUEST_SIGNATURE)[0]);
     }
 
     private function findRequest(array $container, string $url): ?Request

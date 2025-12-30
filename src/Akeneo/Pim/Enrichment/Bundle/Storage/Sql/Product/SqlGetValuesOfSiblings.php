@@ -66,7 +66,7 @@ SQL;
         }
 
         $valuesOfSiblings = [];
-        $rows = $this->connection->executeQuery(
+        $rows = $this->connection->fetchAllAssociative(
             $sql,
             [
                 'parentId' => $entity->getParent()->getId(),

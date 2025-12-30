@@ -8,19 +8,35 @@ use Akeneo\Tool\Bundle\ElasticsearchBundle\Client;
 use Akeneo\Tool\Bundle\ElasticsearchBundle\DualIndexationClient;
 use Akeneo\Tool\Bundle\ElasticsearchBundle\IndexConfiguration\Loader;
 use Akeneo\Tool\Bundle\ElasticsearchBundle\Refresh;
-use Elastic\Elasticsearch\Client as NativeClient;
+use Elastic\Elasticsearch\ClientInterface as NativeClient;
 use Elastic\Elasticsearch\ClientBuilder;
 use Elastic\Elasticsearch\Endpoints\Indices;
 use PhpSpec\ObjectBehavior;
+use Prophecy\Argument;
+use Elastic\Transport\Transport;
+use Psr\Log\LoggerInterface;
+use ReflectionClass;
+use Psr\Http\Client\ClientInterface as HttpClientInterface;
+use Elastic\Transport\NodePool\NodePoolInterface;
 
 class DualIndexationClientSpec extends ObjectBehavior
 {
     function let(
-        NativeClient $nativeClient,
+        MockDualIndexationElasticClientInterface $nativeClient,
         ClientBuilder $clientBuilder,
         Loader $indexConfigurationLoader,
-        Client $dualClient
+        Client $dualClient,
+        HttpClientInterface $httpClient,
+        NodePoolInterface $nodePool,
+        LoggerInterface $logger
     ) {
+        // Create a real client to satisfy the type hint of ClientBuilder::build()
+        $transport = new Transport($httpClient->getWrappedObject(), $nodePool->getWrappedObject(), $logger->getWrappedObject());
+        $realClient = new \Elastic\Elasticsearch\Client($transport, $logger->getWrappedObject());
+
+        $clientBuilder->setHosts(['localhost:9200'])->willReturn($clientBuilder);
+        $clientBuilder->build()->willReturn($realClient);
+
         $this->beConstructedWith(
             $clientBuilder,
             $indexConfigurationLoader,
@@ -30,8 +46,13 @@ class DualIndexationClientSpec extends ObjectBehavior
             100000000,
             $dualClient
         );
-        $clientBuilder->setHosts(['localhost:9200'])->willReturn($clientBuilder);
-        $clientBuilder->build()->willReturn($nativeClient);
+
+        // Force instantiation and replace the client property with our mock
+        $wrappedObject = $this->getWrappedObject();
+        $reflection = new ReflectionClass(Client::class);
+        $property = $reflection->getProperty('client');
+        $property->setAccessible(true);
+        $property->setValue($wrappedObject, $nativeClient->getWrappedObject());
     }
 
     function it_can_be_instantiated()
@@ -115,4 +136,18 @@ class DualIndexationClientSpec extends ObjectBehavior
 
         $this->refreshIndex()->shouldReturn(['errors' => false]);
     }
+}
+
+interface MockDualIndexationElasticClientInterface extends \Elastic\Elasticsearch\ClientInterface
+{
+    public function index(array $params);
+    public function bulk(array $params);
+    public function get(array $params);
+    public function search(array $params);
+    public function msearch(array $params);
+    public function count(array $params);
+    public function delete(array $params);
+    public function deleteByQuery(array $params);
+    public function updateByQuery(array $params);
+    public function indices();
 }

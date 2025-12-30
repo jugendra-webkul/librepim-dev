@@ -28,7 +28,7 @@ class ConstraintViolationNormalizerSpec extends ObjectBehavior
     }
 
     function it_normalizes_a_violation_with_explicit_path(ConstraintViolation $violation) {
-        $violation->getPropertyPath()->willReturn(null);
+        $violation->getPropertyPath()->willReturn('');
         $violation->getMessage()->willReturn('The max date must be greater than the min date.');
         $constraint = new ValidDateRange();
         $constraint->payload['standardPropertyPath'] = 'dateMin';
@@ -41,7 +41,7 @@ class ConstraintViolationNormalizerSpec extends ObjectBehavior
     }
 
     function it_normalizes_global_violation(ConstraintViolation $violation) {
-        $violation->getPropertyPath()->willReturn(null);
+        $violation->getPropertyPath()->willReturn('');
         $violation->getMessage()->willReturn('The max date must be greater than the min date.');
         $constraint = new ValidDateRange();
         $violation->getConstraint()->willReturn($constraint);

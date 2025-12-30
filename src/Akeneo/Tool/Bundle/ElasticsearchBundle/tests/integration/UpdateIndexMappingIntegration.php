@@ -27,7 +27,7 @@ class UpdateIndexMappingIntegration extends TestCase
 
         $aliases = array_map(function (array $index) : string {
             return $index['alias'];
-        }, $client->cat()->aliases());
+        }, $client->cat()->aliases(['format' => 'json'])->asArray());
 
         /** @var ProductQueryBuilderFactory $pqb */
         $pqb = $this->get('pim_catalog.query.product_query_builder_factory_for_reading_purpose');
@@ -40,10 +40,10 @@ class UpdateIndexMappingIntegration extends TestCase
 
         $newIndices = array_map(function (array $index) : string {
             return $index['index'];
-        }, $client->cat()->indices());
+        }, $client->cat()->indices(['format' => 'json'])->asArray());
 
         Assert::assertNotContains($this->getParameter('product_and_product_model_index_name'), $newIndices);
-        Assert::assertTrue($client->indices()->existsAlias(['name' => $this->getParameter('product_and_product_model_index_name')]));
+        Assert::assertTrue($client->indices()->existsAlias(['name' => $this->getParameter('product_and_product_model_index_name')])->asBool());
         Assert::assertEquals(1, $pqb->create()->execute()->count());
     }
 
@@ -60,7 +60,7 @@ class UpdateIndexMappingIntegration extends TestCase
 
         $aliases = array_map(function (array $index) : string {
             return $index['alias'];
-        }, $client->cat()->aliases());
+        }, $client->cat()->aliases(['format' => 'json'])->asArray());
 
         /** @var ProductQueryBuilderFactory $pqb */
         $pqb = $this->get('pim_catalog.query.product_query_builder_factory_for_reading_purpose');

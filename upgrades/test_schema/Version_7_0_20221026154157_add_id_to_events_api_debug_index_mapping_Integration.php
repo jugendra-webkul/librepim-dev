@@ -121,7 +121,7 @@ class Version_7_0_20221026154157_add_id_to_events_api_debug_index_mapping_Integr
     {
         $mapping = current($this->nativeClient->indices()->getMapping(
             ['index' => $this->eventsApiDebugClient->getIndexName()]
-        ));
+        )->asArray());
 
         return $mapping['mappings']['properties'] ?? [];
     }

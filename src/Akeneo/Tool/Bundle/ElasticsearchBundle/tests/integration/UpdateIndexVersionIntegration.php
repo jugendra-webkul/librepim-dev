@@ -91,7 +91,7 @@ class UpdateIndexVersionIntegration extends TestCase
         $clientBuilder->setHosts([$this->getParameter('index_hosts')]);
         $client = $clientBuilder->build();
 
-        $aliasConfiguration = $client->indices()->get(['index' => $this->productAndProductModelIndexName]);
+        $aliasConfiguration = $client->indices()->get(['index' => $this->productAndProductModelIndexName])->asArray();
         $indexNames = array_keys($aliasConfiguration);
 
         if (count($indexNames) !== 1) {

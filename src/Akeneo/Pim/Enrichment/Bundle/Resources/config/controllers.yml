@@ -75,6 +75,7 @@ services:
             - '@oro_security.security_facade'
             - '@validator'
             - '@Akeneo\Pim\Enrichment\Bundle\Storage\Sql\Product\SqlFindProductUuids'
+            - '@Akeneo\Connectivity\Connection\Application\ErrorManagement\Service\CollectApiError'
 
     Akeneo\Pim\Enrichment\Bundle\Controller\ExternalApi\GetProductByUuidController:
         public: true
@@ -333,6 +334,12 @@ services:
             - '@pim_enrich.normalizer.linked_product_normalizer'
             - '@akeneo.pim.enrichment.product.grid.query.fetch_product_and_product_model_rows'
             - '@validator'
+
+    pim_enrich.controller.rest.product_and_product_model.search:
+        public: true
+        class: 'Akeneo\Pim\Enrichment\Bundle\Controller\InternalApi\ProductAndProductModel\SearchProductAndModelsController'
+        arguments:
+            - '@akeneo_elasticsearch.client.product_and_product_model'
 
     pim_enrich.controller.rest.versioning:
         public: true

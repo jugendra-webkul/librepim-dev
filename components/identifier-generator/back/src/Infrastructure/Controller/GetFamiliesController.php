@@ -57,7 +57,7 @@ final class GetFamiliesController
                 (int)$request->query->get('page', (string)self::DEFAULT_PAGE_PAGINATION),
                 $limit,
             ),
-            includeCodes: ($request->query->get('codes') ? (array)$request->query->get('codes') : null)
+            includeCodes: (isset($request->query->all()['codes']) ? (array)$request->query->all()['codes'] : null)
         ));
 
         $normalizedFamilies = \array_map(fn ($family) => $family->normalize(), $families);

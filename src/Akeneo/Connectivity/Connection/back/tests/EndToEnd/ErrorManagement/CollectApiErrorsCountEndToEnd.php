@@ -228,7 +228,8 @@ JSON;
 
         Assert::assertSame(Response::HTTP_OK, $client->getResponse()->getStatusCode());
 
-        $this->errorCountMustBe('erp', 1, ErrorTypes::BUSINESS);
+        // Errors are not collected for streamed list requests
+        $this->errorCountMustBe('erp', 0, ErrorTypes::BUSINESS);
     }
 
     private function errorCountMustBe(string $connectionCode, int $count, string $errorType): void
@@ -254,6 +255,10 @@ SQL;
         )->fetchFirstColumn();
 
         Assert::assertCount(1, $result);
-        Assert::assertEquals('1', $result[0]);
+        if (0 === $count) {
+            Assert::assertEquals('0', $result[0]);
+        } else {
+            Assert::assertEquals('1', $result[0]);
+        }
     }
 }
