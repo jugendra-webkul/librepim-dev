@@ -1,5 +1,11 @@
-# master
+# 8.0.0 (2025-12-30)
 
+## Platform / Component Updates
+
+- Added support for PHP 8.3
+- Updated to Symfony 6.4
+- Updated Elasticsearch support to 8.19
+  
 ## Bug fixes
 
 - PIM-11041: Fix null has attribute group code broke the pef
@@ -116,7 +122,3 @@
 ## Improvements
 
 - PIM-10782: Optimize get completeness SQL query
-
-## New features
-
-## BC Breaks
