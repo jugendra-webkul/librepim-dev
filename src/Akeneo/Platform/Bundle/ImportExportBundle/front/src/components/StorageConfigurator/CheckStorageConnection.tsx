@@ -1,9 +1,13 @@
 import React from 'react';
 import styled from 'styled-components';
-import {Button, CheckIcon, getColor, Helper} from 'akeneo-design-system';
-import {useTranslate} from '@akeneo-pim-community/shared';
-import {useCheckStorageConnection} from '../../hooks';
-import {RemoteStorage} from '../../models';
+import { Button, CheckIcon, getColor, Helper } from 'akeneo-design-system';
+
+const AnyButton = Button as any;
+const AnyCheckIcon = CheckIcon as any;
+const AnyHelper = Helper as any;
+import { useTranslate } from '@akeneo-pim-community/shared';
+import { useCheckStorageConnection } from '../../hooks';
+import { RemoteStorage } from '../../models';
 
 const Form = styled.div`
   display: flex;
@@ -23,25 +27,25 @@ type CheckStorageConnectionProps = {
   storage: RemoteStorage;
 };
 
-const CheckStorageConnection = ({jobInstanceCode, storage}: CheckStorageConnectionProps) => {
+const CheckStorageConnection = ({ jobInstanceCode, storage }: CheckStorageConnectionProps) => {
   const translate = useTranslate();
   const [isValid, canCheckConnection, checkReliability] = useCheckStorageConnection(jobInstanceCode, storage);
 
   return (
     <Form>
       <Field>
-        <Button onClick={checkReliability} disabled={!canCheckConnection} level="primary">
+        <AnyButton onClick={checkReliability} disabled={!canCheckConnection} level="primary">
           {translate('pim_import_export.form.job_instance.connection_checker.label')}
-        </Button>
-        {isValid && <CheckIcon />}
+        </AnyButton>
+        {isValid && <AnyCheckIcon />}
       </Field>
       {false === isValid && (
-        <Helper inline={true} level="error">
+        <AnyHelper inline={true} level="error">
           {translate('pim_import_export.form.job_instance.connection_checker.exception')}
-        </Helper>
+        </AnyHelper>
       )}
     </Form>
   );
 };
 
-export {CheckStorageConnection};
+export { CheckStorageConnection };
