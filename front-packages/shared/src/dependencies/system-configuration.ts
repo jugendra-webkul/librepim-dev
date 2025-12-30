@@ -1,6 +1,6 @@
-import {SystemConfiguration} from '../DependenciesProvider.type';
+import { SystemConfiguration } from '../DependenciesProvider.type';
 
-const systemConfigurationData = {};
+const systemConfigurationData: { [key: string]: any } = {};
 
 const systemConfiguration: SystemConfiguration = {
   initialize: async () => {
@@ -29,4 +29,4 @@ const systemConfiguration: SystemConfiguration = {
     systemConfigurationData[key] ?? defaultValue,
 };
 
-export {systemConfiguration};
+export { systemConfiguration };
