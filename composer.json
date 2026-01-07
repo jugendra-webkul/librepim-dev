@@ -54,7 +54,7 @@
         }
     },
     "require": {
-        "php": "^8.2 || ^8.3",
+        "php": "^8.3",
         "ext-apcu": "*",
         "ext-bcmath": "*",
         "ext-curl": ">=7.0",
@@ -70,7 +70,7 @@
         "ext-xml": "*",
         "ext-zip": "*",
         "ass/xmlsecurity": "1.1.1",
-        "aws/aws-sdk-php": "3.253.0",
+        "aws/aws-sdk-php": "3.369.8",
         "doctrine/annotations": "^1.13.2",
         "doctrine/cache": "^1.12",
         "doctrine/collections": "^2.1.0",
