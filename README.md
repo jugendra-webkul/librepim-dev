@@ -41,7 +41,7 @@ Refer to the official installation steps here:
 To build the development Docker image:
 
 ```bash
-docker build --target dev -t librepim/pim-php-dev:master .
+docker build --target dev -t webkul/librepim-php-dev:master .
 ```
 
 ---
