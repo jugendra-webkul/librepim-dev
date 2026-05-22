@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Akeneo\Tool\Bundle\ElasticsearchBundle\SearchEngine;
 
 use Elastic\Elasticsearch\Exception\ElasticsearchException;
+use Elastic\Elasticsearch\Response\Elasticsearch as ElasticResponse;
 use OpenSearch\Common\Exceptions\BadRequest400Exception;
 use OpenSearch\Common\Exceptions\Conflict409Exception;
 use OpenSearch\Common\Exceptions\Missing404Exception;
@@ -36,12 +37,15 @@ final class SearchEngineExceptionTranslator
 
         if (method_exists($e, 'getResponse')) {
             $response = $e->getResponse();
-            if ($response instanceof ResponseInterface) {
+            if ($response instanceof ElasticResponse) {
+                // Elasticsearch PHP 8.x: not PSR-7 but exposes getStatusCode()/getBody().
+                $status = $response->getStatusCode();
+                $body = (string) $response->getBody();
+            } elseif ($response instanceof ResponseInterface) {
                 $status = $response->getStatusCode();
                 $body = (string) $response->getBody();
             } elseif (is_object($response) && method_exists($response, 'getStatusCode')) {
-                // Elastic\Elasticsearch\Response\Elasticsearch (Elasticsearch PHP 8.x)
-                // is not PSR-7 but exposes getStatusCode()/getBody().
+                // Defensive fallback for any other response object that exposes the same shape.
                 $status = $response->getStatusCode();
                 if (method_exists($response, 'getBody')) {
                     $body = (string) $response->getBody();
