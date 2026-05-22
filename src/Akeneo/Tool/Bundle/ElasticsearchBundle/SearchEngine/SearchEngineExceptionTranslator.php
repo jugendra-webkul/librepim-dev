@@ -1,0 +1,52 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Akeneo\Tool\Bundle\ElasticsearchBundle\SearchEngine;
+
+use Elastic\Elasticsearch\Exception\ElasticsearchException;
+use OpenSearch\Common\Exceptions\BadRequest400Exception;
+use OpenSearch\Common\Exceptions\Conflict409Exception;
+use OpenSearch\Common\Exceptions\Missing404Exception;
+use OpenSearch\Common\Exceptions\OpenSearchException;
+use OpenSearch\Common\Exceptions\ServerErrorResponseException;
+use Psr\Http\Message\ResponseInterface;
+
+/**
+ * Translates Elasticsearch PHP client exceptions into their OpenSearch client
+ * equivalents.
+ *
+ * This lets the rest of LibrePIM catch only OpenSearch exception types
+ * (`OpenSearchException`, `BadRequest400Exception`, `Conflict409Exception`, ...)
+ * regardless of whether the configured search engine is OpenSearch or
+ * Elasticsearch. The HTTP status is carried as the exception code, and the
+ * response body as the message — matching the OpenSearch client's behaviour.
+ */
+final class SearchEngineExceptionTranslator
+{
+    public static function translate(\Throwable $e): \Throwable
+    {
+        // Already an OpenSearch exception, or not search-engine related: leave as-is.
+        if ($e instanceof OpenSearchException || !$e instanceof ElasticsearchException) {
+            return $e;
+        }
+
+        $status = null;
+        $body = $e->getMessage();
+
+        if (method_exists($e, 'getResponse')) {
+            $response = $e->getResponse();
+            if ($response instanceof ResponseInterface) {
+                $status = $response->getStatusCode();
+                $body = (string) $response->getBody();
+            }
+        }
+
+        return match (true) {
+            404 === $status => new Missing404Exception($body, 404, $e),
+            409 === $status => new Conflict409Exception($body, 409, $e),
+            null !== $status && $status >= 500 => new ServerErrorResponseException($body, $status, $e),
+            default => new BadRequest400Exception($body, $status ?? 0, $e),
+        };
+    }
+}
