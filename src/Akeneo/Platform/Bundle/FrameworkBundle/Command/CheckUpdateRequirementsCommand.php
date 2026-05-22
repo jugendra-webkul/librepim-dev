@@ -19,7 +19,8 @@ class CheckUpdateRequirementsCommand extends Command
     public function __construct(
         private ClientRegistry $clientRegistry,
         $clientBuilder,
-        private array $elasticsearchHosts
+        private array $elasticsearchHosts,
+        private string $searchEngine = 'opensearch'
     ) {
         parent::__construct();
 
@@ -58,16 +59,26 @@ class CheckUpdateRequirementsCommand extends Command
                 $aliasName = array_keys($indexConfiguration['aliases'])[0];
             }
 
-            // The PIM now runs on OpenSearch 2.x. The legacy Elasticsearch 7/8
-            // index-version check no longer applies, so OpenSearch-created indexes
-            // are always considered compliant.
+            // Under Elasticsearch, indexes must have been created with ES 7 or 8.
+            // Under OpenSearch, any OpenSearch-created index is accepted.
+            $versionCreated = (string) ($indexConfiguration['settings']['index']['version']['created'] ?? '');
+            $isCompliant = 'elasticsearch' === $this->searchEngine
+                ? (str_starts_with($versionCreated, '7') || str_starts_with($versionCreated, '8'))
+                : '' !== $versionCreated;
+
+            $helpText = !in_array($aliasName, $registeredAlias)
+                ? "The index $indexName seems to not be used by the PIM, please check if you use it. If you didn't use it delete it: curl --location --request DELETE 'http://$firstElasticsearchHost/$indexName'."
+                : "The index $indexName is managed by the PIM.";
+
+            if (!$isCompliant && in_array($aliasName, $registeredAlias)) {
+                $helpText = "The index $indexName should be re-indexed in order to be created with a supported engine version, run: bin/console akeneo:elasticsearch:update-index-version $aliasName";
+            }
+
             $requirements->add(
                 new Requirement(
-                    true,
+                    $isCompliant,
                     "Index $indexName creation version",
-                    !in_array($aliasName, $registeredAlias) ?
-                        "The index $indexName seems to not be used by the PIM, please check if you use it. If you didn't use it delete it: curl --location --request DELETE 'http://$firstElasticsearchHost/$indexName'."
-                        : "The index $indexName is managed by the PIM."
+                    $helpText
                 )
             );
         }

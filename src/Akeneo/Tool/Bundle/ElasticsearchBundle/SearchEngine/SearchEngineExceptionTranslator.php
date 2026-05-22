@@ -39,7 +39,20 @@ final class SearchEngineExceptionTranslator
             if ($response instanceof ResponseInterface) {
                 $status = $response->getStatusCode();
                 $body = (string) $response->getBody();
+            } elseif (is_object($response) && method_exists($response, 'getStatusCode')) {
+                // Elastic\Elasticsearch\Response\Elasticsearch (Elasticsearch PHP 8.x)
+                // is not PSR-7 but exposes getStatusCode()/getBody().
+                $status = $response->getStatusCode();
+                if (method_exists($response, 'getBody')) {
+                    $body = (string) $response->getBody();
+                }
             }
+        }
+
+        // Fall back to the exception's own code so downstream consumers
+        // (bulk retry/backoff, controller error mapping) can still inspect it.
+        if (null === $status && 0 !== $e->getCode()) {
+            $status = $e->getCode();
         }
 
         return match (true) {

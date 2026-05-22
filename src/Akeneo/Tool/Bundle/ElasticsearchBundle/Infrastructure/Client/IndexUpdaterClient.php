@@ -64,7 +64,7 @@ final class IndexUpdaterClient
 
     public function reindexAllDocuments(string $sourceAliasName, string $destinationAliasName)
     {
-        $this->logger->notice("First indexation into the new opensearch index");
+        $this->logger->notice("First indexation into the new search index");
         $reindexResponse = $this->client->reindex([
             'wait_for_completion' => true,
             'body' => [
