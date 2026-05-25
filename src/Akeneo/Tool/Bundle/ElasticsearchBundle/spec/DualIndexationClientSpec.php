@@ -8,16 +8,10 @@ use Akeneo\Tool\Bundle\ElasticsearchBundle\Client;
 use Akeneo\Tool\Bundle\ElasticsearchBundle\DualIndexationClient;
 use Akeneo\Tool\Bundle\ElasticsearchBundle\IndexConfiguration\Loader;
 use Akeneo\Tool\Bundle\ElasticsearchBundle\Refresh;
-use Elastic\Elasticsearch\ClientInterface as NativeClient;
-use Elastic\Elasticsearch\ClientBuilder;
-use Elastic\Elasticsearch\Endpoints\Indices;
+use OpenSearch\ClientBuilder;
+use OpenSearch\Namespaces\IndicesNamespace;
 use PhpSpec\ObjectBehavior;
-use Prophecy\Argument;
-use Elastic\Transport\Transport;
-use Psr\Log\LoggerInterface;
 use ReflectionClass;
-use Psr\Http\Client\ClientInterface as HttpClientInterface;
-use Elastic\Transport\NodePool\NodePoolInterface;
 
 class DualIndexationClientSpec extends ObjectBehavior
 {
@@ -25,14 +19,11 @@ class DualIndexationClientSpec extends ObjectBehavior
         MockDualIndexationElasticClientInterface $nativeClient,
         ClientBuilder $clientBuilder,
         Loader $indexConfigurationLoader,
-        Client $dualClient,
-        HttpClientInterface $httpClient,
-        NodePoolInterface $nodePool,
-        LoggerInterface $logger
+        Client $dualClient
     ) {
-        // Create a real client to satisfy the type hint of ClientBuilder::build()
-        $transport = new Transport($httpClient->getWrappedObject(), $nodePool->getWrappedObject(), $logger->getWrappedObject());
-        $realClient = new \Elastic\Elasticsearch\Client($transport, $logger->getWrappedObject());
+        // A real client object satisfies the return type of ClientBuilder::build();
+        // it is immediately replaced below by the mocked client.
+        $realClient = (new ClientBuilder())->setHosts(['localhost:9200'])->build();
 
         $clientBuilder->setHosts(['localhost:9200'])->willReturn($clientBuilder);
         $clientBuilder->build()->willReturn($realClient);
@@ -47,7 +38,7 @@ class DualIndexationClientSpec extends ObjectBehavior
             $dualClient
         );
 
-        // Force instantiation and replace the client property with our mock
+        // Force instantiation and replace the parent client property with our mock
         $wrappedObject = $this->getWrappedObject();
         $reflection = new ReflectionClass(Client::class);
         $property = $reflection->getProperty('client');
@@ -61,7 +52,7 @@ class DualIndexationClientSpec extends ObjectBehavior
         $this->shouldBeAnInstanceOf(Client::class);
     }
 
-    function it_indexes_on_both_clients(NativeClient $nativeClient, Client $dualClient)
+    function it_indexes_on_both_clients(MockDualIndexationElasticClientInterface $nativeClient, Client $dualClient)
     {
         $nativeClient->index(
             [
@@ -77,7 +68,7 @@ class DualIndexationClientSpec extends ObjectBehavior
             ->shouldReturn(['errors' => false]);
     }
 
-    function it_bulk_indexes_on_both_clients(NativeClient $nativeClient, Client $dualClient)
+    function it_bulk_indexes_on_both_clients(MockDualIndexationElasticClientInterface $nativeClient, Client $dualClient)
     {
         $expectedResponse = [
             'took' => 1,
@@ -114,7 +105,7 @@ class DualIndexationClientSpec extends ObjectBehavior
         $this->bulkIndexes($documents, 'identifier', Refresh::waitFor())->shouldReturn($expectedResponse);
     }
 
-    function it_deletes_by_query_on_both_clients(NativeClient $nativeClient, Client $dualClient)
+    function it_deletes_by_query_on_both_clients(MockDualIndexationElasticClientInterface $nativeClient, Client $dualClient)
     {
         $query = ['foo' => 'bar'];
 
@@ -127,7 +118,7 @@ class DualIndexationClientSpec extends ObjectBehavior
         $this->deleteByQuery($query);
     }
 
-    function it_refreshes_both_indexes(NativeClient $nativeClient, Client $dualClient, Indices $indices)
+    function it_refreshes_both_indexes(MockDualIndexationElasticClientInterface $nativeClient, Client $dualClient, IndicesNamespace $indices)
     {
         $nativeClient->indices()->willReturn($indices);
         $indices->refresh(['index' => 'an_index_name'])->willReturn(['errors' => false]);
@@ -138,7 +129,12 @@ class DualIndexationClientSpec extends ObjectBehavior
     }
 }
 
-interface MockDualIndexationElasticClientInterface extends \Elastic\Elasticsearch\ClientInterface
+/**
+ * Engine-agnostic test double of the native search client. It declares only
+ * the methods LibrePIM's Client wrapper calls, so it works regardless of the
+ * configured search engine (OpenSearch or the Elasticsearch adapter).
+ */
+interface MockDualIndexationElasticClientInterface
 {
     public function index(array $params);
     public function bulk(array $params);
