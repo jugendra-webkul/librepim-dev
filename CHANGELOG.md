@@ -1,3 +1,18 @@
+# Unreleased
+
+## Platform / Component Updates
+
+- Added optional OpenSearch 2.x support alongside the default Elasticsearch 8
+  engine. Selectable at runtime via the `SEARCH_ENGINE` environment variable
+  (`elasticsearch` default, `opensearch` to opt in). The Elasticsearch path is
+  unchanged — existing deployments and Elasticsearch-aware code (exception
+  catches, the `Elastic\Elasticsearch\Client` SDK, the
+  `bin/console akeneo:elasticsearch:*` commands) keep working identically.
+  Setup, switching procedure, and troubleshooting notes are in the "Search
+  Engine" section of `README.md`. Adapter layer lives under
+  `src/Akeneo/Tool/Bundle/ElasticsearchBundle/SearchEngine/`; unit-tested in
+  `spec/SearchEngine/SearchEngineExceptionTranslatorSpec.php`.
+
 # 8.0.0 (2025-12-30)
 
 ## Platform / Component Updates

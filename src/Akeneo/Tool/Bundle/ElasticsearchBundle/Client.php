@@ -11,6 +11,7 @@ use Akeneo\Tool\Bundle\ElasticsearchBundle\IndexConfiguration\Loader;
 use Elastic\Elasticsearch\ClientInterface as NativeClient;
 use Elastic\Elasticsearch\ClientBuilder;
 use Elastic\Elasticsearch\Exception\ClientResponseException;
+use Elastic\Elasticsearch\Response\Elasticsearch as ElasticsearchResponse;
 use Ramsey\Uuid\Uuid;
 
 /**
@@ -26,11 +27,13 @@ class Client
     /** Number of split requests when retrying bulk index */
     private const NUMBER_OF_BATCHES_ON_RETRY = 2;
 
-    private ClientBuilder $builder;
+    /** @var ClientBuilder|object */
+    private object $builder;
     private Loader $configurationLoader;
     private array $hosts;
     private string $indexName;
-    private NativeClient $client;
+    /** @var NativeClient|object */
+    private object $client;
     private string $idPrefix;
     private int $maxChunkSize;
     private int $maxExpectedIndexationLatencyInMicroseconds;
@@ -42,7 +45,7 @@ class Client
      * To learn more, please see {@link https://www.elastic.co/guide/en/elasticsearch/client/php-api/current/_configuration.html}
      */
     public function __construct(
-        ClientBuilder $builder,
+        object $builder,
         Loader $configurationLoader,
         array $hosts,
         string $indexName,
@@ -469,7 +472,15 @@ class Client
 
     private function toResultArray($response): array
     {
-        if ($response instanceof \Elastic\Elasticsearch\Response\Elasticsearch) {
+        if ($response instanceof ElasticsearchResponse) {
+            return $response->asArray();
+        }
+
+        if (is_array($response)) {
+            return $response;
+        }
+
+        if (is_object($response) && method_exists($response, 'asArray')) {
             return $response->asArray();
         }
 

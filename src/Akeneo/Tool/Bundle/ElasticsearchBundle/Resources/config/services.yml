@@ -8,9 +8,16 @@ services:
     akeneo_elasticsearch.registry.clients:
         class: '%akeneo_elasticsearch.registry.clients.class%'
 
+    # Returns either an Elasticsearch ClientBuilder (default) or an OpenSearch
+    # adapter (when SEARCH_ENGINE=opensearch) that exposes the same surface.
+    # The selection is made by SearchEngineClientBuilderFactory based on the
+    # SEARCH_ENGINE environment variable.
     akeneo_elasticsearch.client_builder:
         public: true
         class: '%akeneo_elasticsearch.client_builder.class%'
+        factory: ['Akeneo\Tool\Bundle\ElasticsearchBundle\SearchEngine\SearchEngineClientBuilderFactory', 'createBuilder']
+        arguments:
+            - '%env(default::SEARCH_ENGINE)%'
 
     akeneo_elasticsearch.install.install_subscriber:
         class: Akeneo\Tool\Bundle\ElasticsearchBundle\Infrastructure\Install\InstallSubscriber
