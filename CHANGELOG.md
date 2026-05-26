@@ -2,13 +2,16 @@
 
 ## Platform / Component Updates
 
-- Added support for **OpenSearch 2.19** as the search engine, with a switchable
-  engine selector.
-  - New `SEARCH_ENGINE` environment variable: `opensearch` (default) or `elasticsearch`.
-  - Ships with both PHP clients (`opensearch-project/opensearch-php ~2.3.1` and
-    `elasticsearch/elasticsearch ^8.19`); an internal adapter lets the Elasticsearch
-    client present the same API as the OpenSearch client.
-  - `SEARCH_ENGINE` and `APP_INDEX_HOSTS` must point at the same engine.
+- Added optional OpenSearch 2.x support alongside the default Elasticsearch 8
+  engine. Selectable at runtime via the `SEARCH_ENGINE` environment variable
+  (`elasticsearch` default, `opensearch` to opt in). The Elasticsearch path is
+  unchanged — existing deployments and Elasticsearch-aware code (exception
+  catches, the `Elastic\Elasticsearch\Client` SDK, the
+  `bin/console akeneo:elasticsearch:*` commands) keep working identically.
+  Setup, switching procedure, and troubleshooting notes are in the "Search
+  Engine" section of `README.md`. Adapter layer lives under
+  `src/Akeneo/Tool/Bundle/ElasticsearchBundle/SearchEngine/`; unit-tested in
+  `spec/SearchEngine/SearchEngineExceptionTranslatorSpec.php`.
 
 # 8.0.0 (2025-12-30)
 
