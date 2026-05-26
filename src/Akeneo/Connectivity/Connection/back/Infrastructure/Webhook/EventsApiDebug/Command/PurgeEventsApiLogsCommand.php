@@ -6,7 +6,7 @@ namespace Akeneo\Connectivity\Connection\Infrastructure\Webhook\EventsApiDebug\C
 
 use Akeneo\Connectivity\Connection\Infrastructure\Webhook\EventsApiDebug\Persistence\PurgeEventsApiErrorLogsQuery;
 use Akeneo\Connectivity\Connection\Infrastructure\Webhook\EventsApiDebug\Persistence\PurgeEventsApiSuccessLogsQuery;
-use Elastic\Elasticsearch\Exception\ElasticsearchException;
+use OpenSearch\Common\Exceptions\OpenSearchException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -38,7 +38,7 @@ class PurgeEventsApiLogsCommand extends Command
             $this->purgeSuccessLogsQuery->execute();
             $this->purgeErrorLogsQuery->execute((new \DateTimeImmutable('now', new \DateTimeZone('UTC')))
                 ->sub(new \DateInterval('PT72H')));
-        } catch (ElasticsearchException $ex) {
+        } catch (OpenSearchException $ex) {
             $this->logger->warning('Elasticsearch is unavailable', ['exception' => $ex]);
 
             return Command::FAILURE;

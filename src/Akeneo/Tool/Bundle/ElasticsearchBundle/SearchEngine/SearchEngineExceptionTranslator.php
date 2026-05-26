@@ -9,16 +9,6 @@ use Elastic\Elasticsearch\Exception\ServerResponseException;
 use GuzzleHttp\Psr7\Response as GuzzleResponse;
 use OpenSearch\Common\Exceptions\OpenSearchException;
 
-/**
- * Translates OpenSearch PHP client exceptions into their Elasticsearch client
- * equivalents.
- *
- * This lets the rest of LibrePIM keep catching `ElasticsearchException`,
- * `ClientResponseException`, and `ServerResponseException` regardless of which
- * search engine is configured. The HTTP status is preserved on the attached
- * PSR-7 response so existing `$e->getResponse()->getStatusCode()` checks keep
- * working.
- */
 final class SearchEngineExceptionTranslator
 {
     public static function translate(\Throwable $e): \Throwable

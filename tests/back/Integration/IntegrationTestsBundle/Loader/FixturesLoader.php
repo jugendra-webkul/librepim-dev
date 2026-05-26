@@ -20,7 +20,7 @@ use Akeneo\Tool\Bundle\ElasticsearchBundle\Client;
 use Akeneo\Tool\Bundle\ElasticsearchBundle\ClientRegistry;
 use Akeneo\Tool\Bundle\MeasureBundle\Installer\MeasurementInstaller;
 use Doctrine\DBAL\Connection;
-use Elastic\Elasticsearch\ClientBuilder;
+use Akeneo\Tool\Bundle\ElasticsearchBundle\SearchEngine\SearchEngineClientBuilderFactory;
 use League\Flysystem\DirectoryAttributes;
 use League\Flysystem\FilesystemOperator;
 use League\Flysystem\StorageAttributes;
@@ -61,7 +61,8 @@ class FixturesLoader implements FixturesLoaderInterface
     private string $databaseUser;
     private string $databasePassword;
     private string $sqlDumpDirectory;
-    private \Elastic\Elasticsearch\Client $nativeElasticsearchClient;
+    /** @var object OpenSearch\Client or ElasticsearchClientAdapter */
+    private $nativeElasticsearchClient;
     private MeasurementInstaller $measurementInstaller;
     private TransportInterface $transport;
     private EventDispatcherInterface $eventDispatcher;
@@ -115,7 +116,7 @@ class FixturesLoader implements FixturesLoaderInterface
         $this->databaseUser = $databaseUser;
         $this->databasePassword = $databasePassword;
         $this->sqlDumpDirectory = $sqlDumpDirectory;
-        $clientBuilder = new ClientBuilder();
+        $clientBuilder = SearchEngineClientBuilderFactory::createBuilder($_ENV['SEARCH_ENGINE'] ?? 'opensearch');
         $clientBuilder->setHosts([$elasticsearchHost]);
         $this->nativeElasticsearchClient = $clientBuilder->build();
         $this->measurementInstaller = $measurementInstaller;
