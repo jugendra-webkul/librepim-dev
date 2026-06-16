@@ -3,8 +3,7 @@ declare(strict_types=1);
 
 namespace Akeneo\Pim\Enrichment\Bundle\Command;
 
-use Elastic\Elasticsearch\Exception\ClientResponseException;
-use Elastic\Elasticsearch\Exception\ElasticsearchException;
+use OpenSearch\Common\Exceptions\OpenSearchException;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -43,9 +42,12 @@ class BackoffElasticSearchStateHandler
         foreach ($batchOfCodes as $codes) {
             try {
                 $treated+=$codesEsHandler->bulkExecute($codes);
-            } catch (ClientResponseException $e) {
-                if ($e->getResponse()->getStatusCode() == Response::HTTP_TOO_MANY_REQUESTS  && $numberRetry < $this->maxNumberRetry) {
-                    $batchSize = intdiv(count($codes), $this->backoffLogarithmicIncrement);
+            } catch (OpenSearchException $e) {
+                if ($e->getCode() == Response::HTTP_TOO_MANY_REQUESTS  && $numberRetry < $this->maxNumberRetry) {
+                    if (count($codes) <= 1) {
+                        throw $e;
+                    }
+                    $batchSize = max(1, intdiv(count($codes), $this->backoffLogarithmicIncrement));
                     $smallerBatchOfCodes = array_chunk($codes, $batchSize);
                     $treated+=$this->executeAttempt($smallerBatchOfCodes, $codesEsHandler, ++$numberRetry);
                 } else {

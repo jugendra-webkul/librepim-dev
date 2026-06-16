@@ -4,6 +4,7 @@ services:
         arguments:
             $clientRegistry: '@akeneo_elasticsearch.registry.clients'
             $hosts: '%index_hosts%'
+            $searchEngine: '%env(SEARCH_ENGINE)%'
         tags:
             - {name: console.command}
             - { name: 'akeneo.command.authenticated_as_admin_user' }
@@ -20,6 +21,7 @@ services:
             - '@Akeneo\Tool\Bundle\ElasticsearchBundle\GetTotalFieldsLimit'
             - '%index_hosts%'
             - '%index_list_changed_total_field_limit%'
+            - '%env(SEARCH_ENGINE)%'
         tags:
             - { name: 'console.command' }
             - { name: 'akeneo.command.authenticated_as_admin_user' }

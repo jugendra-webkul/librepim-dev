@@ -11,6 +11,9 @@ services:
     akeneo_elasticsearch.client_builder:
         public: true
         class: '%akeneo_elasticsearch.client_builder.class%'
+        factory: ['Akeneo\Tool\Bundle\ElasticsearchBundle\SearchEngine\SearchEngineClientBuilderFactory', 'createBuilder']
+        arguments:
+            - '%env(default::SEARCH_ENGINE)%'
 
     akeneo_elasticsearch.install.install_subscriber:
         class: Akeneo\Tool\Bundle\ElasticsearchBundle\Infrastructure\Install\InstallSubscriber

@@ -7,7 +7,7 @@ namespace Akeneo\Tool\Bundle\ElasticsearchBundle\Command;
 use Akeneo\Tool\Bundle\ElasticsearchBundle\Client;
 use Akeneo\Tool\Bundle\ElasticsearchBundle\ClientRegistry;
 use Akeneo\Tool\Bundle\ElasticsearchBundle\GetTotalFieldsLimit;
-use Elastic\Elasticsearch\ClientBuilder;
+use Akeneo\Tool\Bundle\ElasticsearchBundle\SearchEngine\SearchEngineClientBuilderFactory;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -28,7 +28,8 @@ class UpdateTotalFieldsLimitCommand extends Command
         ClientRegistry $esClientsRegistry,
         GetTotalFieldsLimit $getTotalFieldsLimit,
         $hosts,
-        array $indexesToUpdate
+        array $indexesToUpdate,
+        private string $searchEngine = 'opensearch'
     ) {
         parent::__construct();
 
@@ -64,7 +65,7 @@ class UpdateTotalFieldsLimitCommand extends Command
         return Command::SUCCESS;
     }
 
-    private function getIndexCurrentTotalFieldsLimit(\Elastic\Elasticsearch\Client $client, string $indexName): int
+    private function getIndexCurrentTotalFieldsLimit($client, string $indexName): int
     {
         $indices = $client->indices();
         $indexSettingsWithAlias = $indices->getSettings(['index' => $indexName]);
@@ -73,7 +74,7 @@ class UpdateTotalFieldsLimitCommand extends Command
         return (int) $indexSettings['index']['mapping']['total_fields']['limit'];
     }
 
-    private function updateIndexTotalFieldsLimit(\Elastic\Elasticsearch\Client $client, string $indexName, int $newLimit): void
+    private function updateIndexTotalFieldsLimit($client, string $indexName, int $newLimit): void
     {
         $indices = $client->indices();
         $indices->putSettings([
@@ -92,7 +93,7 @@ class UpdateTotalFieldsLimitCommand extends Command
 
     private function buildNativeClient(Client $client): array
     {
-        $clientBuilder = new ClientBuilder();
+        $clientBuilder = SearchEngineClientBuilderFactory::createBuilder($this->searchEngine);
         $clientBuilder->setHosts($this->hosts);
         $nativeClient = $clientBuilder->build();
 
