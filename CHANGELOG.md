@@ -7,6 +7,21 @@
 * Maintained compatibility with Elasticsearch 8.19
 * Fixed OAuth2 installation issue in Docker environments
 
+## Security
+
+* Updated Symfony components to 6.4.41 (LTS), incorporating the latest upstream security and stability fixes across HttpFoundation, Security, Routing, Mailer, Mime, Cache, YAML and Twig Bridge components.
+* Updated Twig to 3.27.1, incorporating the latest upstream security fixes and improvements.
+* Updated third-party dependencies to their latest compatible secure releases:
+
+  * `firebase/php-jwt` → 7.1.0
+  * `phpseclib/phpseclib` → 3.0.55
+  * `guzzlehttp/psr7` → 2.11.1
+  * `google/protobuf` → 4.33.6
+  * `dompdf/dompdf` → 2.0.8
+  * `aws/aws-sdk-php` → 3.384.10
+* Verified with Composer Audit: no known vulnerabilities are reported in the production dependency stack.
+
+
 # 8.0.0 (2025-12-30)
 
 ## Platform / Component Updates
