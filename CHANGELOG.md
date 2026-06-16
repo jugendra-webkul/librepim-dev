@@ -2,6 +2,15 @@
 
 ## Platform / Component Updates
 
+* Added support for OpenSearch 2.19+
+* Added search engine selection via `SEARCH_ENGINE`
+* Maintained compatibility with Elasticsearch 8.19
+* Fixed OAuth2 installation issue in Docker environments
+
+# 8.0.0 (2025-12-30)
+
+## Platform / Component Updates
+
 - Added support for PHP 8.3
 - Updated to Symfony 6.4
 - Updated Elasticsearch support to 8.19
