@@ -1,3 +1,20 @@
+# Unreleased
+
+## CI / Infrastructure
+
+* Added GitHub Actions CI/CD workflows: automated Docker build & publish (`docker.yml`) and pull request checks for PHPSpec, CS-Fixer, and frontend lint/unit tests (`pull_request.yml`)
+* Applied PHPSpec CI improvement: `stderr` output separated from JUnit XML for cleaner CI logs under PHP 8.3 (`phpspec.yml.dist`)
+* Pinned all third-party GitHub Actions in `dsm-test.yml` to immutable SHA refs; replaced two `thollander/actions-comment-pull-request@main` (moving branch) with `@v1` to mitigate supply chain risk (ref: CVE-2025-30066)
+
+## Dependency Upgrades
+
+* Upgraded Docker MySQL image from `8.0.30` to `8.0.34` LTS and removed deprecated `--default-authentication-plugin=mysql_native_password`
+* Upgraded `lcobucci/jwt` from `^4.2` to `^5.0`; updated `CreateJsonWebTokenSpec` to use `ValidAt` constraint (replaces removed `LooseValidAt`) and consolidated validation constraint registration
+
+## Tests
+
+* Fixed PHPSpec compatibility under PHP 8.3 across multiple spec files (`ClientSpec`, `AttributeOptionValueTypeSpec`, `UrlValidatorSpec`, `GuzzleWebhookClientSpec`, `FamilyShouldBeValidValidatorSpec`, `PropertyProcessShouldBeValidValidatorSpec`, `SimpleOrMultiSelectShouldBeValidValidatorSpec`, `LoginRateLimitListenerSpec`)
+
 # 8.1.0 (2026-06-16)
 
 ## Platform / Component Updates

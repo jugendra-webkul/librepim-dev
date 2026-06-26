@@ -17,7 +17,7 @@ use Lcobucci\JWT\Signer\Rsa\Sha256;
 use Lcobucci\JWT\Token\RegisteredClaims;
 use Lcobucci\JWT\UnencryptedToken;
 use Lcobucci\JWT\Validation\Constraint\IssuedBy;
-use Lcobucci\JWT\Validation\Constraint\LooseValidAt;
+use Lcobucci\JWT\Validation\Constraint\ValidAt;
 use Lcobucci\JWT\Validation\Constraint\PermittedFor;
 use Lcobucci\JWT\Validation\Constraint\RelatedTo;
 use Lcobucci\JWT\Validation\Constraint\SignedWith;
@@ -118,11 +118,11 @@ class CreateJsonWebTokenSpec extends ObjectBehavior
 
         Assert::assertInstanceOf(UnencryptedToken::class, $token);
 
-        $configuration->setValidationConstraints(new IssuedBy($this->pimUrl));
-        $configuration->setValidationConstraints(new RelatedTo($this->ppid));
-        $configuration->setValidationConstraints(new PermittedFor($this->clientId));
-        $configuration->setValidationConstraints(new LooseValidAt(new FrozenClock($this->now)));
         $configuration->setValidationConstraints(
+            new IssuedBy($this->pimUrl),
+            new RelatedTo($this->ppid),
+            new PermittedFor($this->clientId),
+            new ValidAt(new FrozenClock($this->now)),
             new SignedWith($configuration->signer(), $configuration->verificationKey())
         );
 
