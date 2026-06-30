@@ -20,7 +20,7 @@
 ## Platform / Component Updates
 
 * Added support for OpenSearch 2.19+
-* Added search engine selection via `SEARCH_ENGINE`
+* Added search engine selection via `SEARCH_ENGINE`; dual compatibility with **OpenSearch 2.19** and **Elasticsearch 8.19** as interchangeable search backends
 * Maintained compatibility with Elasticsearch 8.19
 * Fixed OAuth2 installation issue in Docker environments
 

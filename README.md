@@ -31,18 +31,99 @@ Focused on maintaining a stable and secure PIM experience for real-world workloa
 
 ## 📦 Installation
 
-Librepim follows the same installation workflow as the Akeneo PIM Community Edition, with only a few configuration-level differences.
+### Prerequisites
 
-Refer to the official installation steps here:
+| Requirement | Minimum version |
+|-------------|----------------|
+| Docker | 24.x |
+| Docker Compose | v2.x (`docker compose`) |
+| GNU Make | 4.x |
+| Git | any |
 
-👉 **Installation Guide (Akeneo CE compatible)**
-[https://docs.akeneo.com/master/install_pim/index.html](https://docs.akeneo.com/master/install_pim/index.html)
+> **Note:** `composer`, `php`, `yarn`, and `node` are **not** required on the host — everything runs inside Docker containers.
 
-To build the development Docker image:
+### Quick start (Docker)
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/libre-pim/librepim-dev
+cd librepim-dev
+
+# 2. Configure your local environment
+echo "SEARCH_ENGINE=opensearch" > .env.local
+
+# 3. Install (single command — pulls images, installs deps, builds frontend, seeds DB)
+make dev
+```
+
+**App will be available at:** `http://localhost:8080`
+Default credentials: `admin` / `admin`
+
+**Total install time:** ~10–15 minutes (webpack build is the longest step).
+
+### What `make dev` does
+
+```
+make dependencies       → composer install + yarn install
+make pim-dev
+  ├── make up           → docker compose up -d (all containers)
+  ├── wait_docker_up.sh → waits for MySQL + OpenSearch to be ready
+  ├── make cache        → clear + warmup Symfony cache
+  ├── make assets       → install Symfony bundle assets
+  ├── make front-packages → build TypeScript front-end packages
+  ├── make javascript-dev → webpack bundle (dev mode)
+  ├── make css          → compile LESS → public/css/pim.css
+  ├── make javascript-extensions → update form extensions manifest
+  └── make database     → create DB schema + load icecat demo fixtures
+```
+
+### Building the Docker image from source
+
+Only needed if you want to build the PHP image locally instead of pulling from the registry:
 
 ```bash
 docker build --target dev -t webkul/librepim-php-dev:master .
 ```
+
+---
+
+## ⚙️ Local Environment Configuration
+
+LibrePIM ships a `.env` file with safe defaults. **Do not edit `.env` directly.**
+Instead, create a `.env.local` file in the project root and override only what you need.
+`.env.local` is gitignored and never committed.
+
+### Search Engine
+
+Set which search backend to use:
+
+```bash
+# .env.local
+
+# Use OpenSearch (recommended for Docker setup — see docker-compose.yml)
+SEARCH_ENGINE=opensearch
+APP_INDEX_HOSTS=elasticsearch:9200
+
+# Or use Elasticsearch 8
+# SEARCH_ENGINE=elasticsearch
+# APP_INDEX_HOSTS=<your-elasticsearch-url>
+```
+
+If `SEARCH_ENGINE` is unset or empty, Elasticsearch is used by default.
+
+### Docker host user (HOST_UID / HOST_GID)
+
+The Makefile **automatically detects** your host user and group IDs via `id -u` / `id -g` and exports them to Docker. No manual configuration is needed for most setups.
+
+If you need to override (e.g. CI, shared environments):
+
+```bash
+# .env.local
+HOST_UID=1005
+HOST_GID=500
+```
+
+These values are used by the `php` service in `docker-compose.yml` so that files created inside the container are owned by your host user, preventing permission errors on bind-mounted volumes.
 
 ---
 
@@ -55,9 +136,11 @@ engine-agnostic.
 
 ### Selecting the engine
 
-In your environment configuration:
+Set `SEARCH_ENGINE` in your `.env.local` file (see [Local Environment Configuration](#️-local-environment-configuration)):
 
-```
+```bash
+# .env.local
+
 # Default. Native Elasticsearch 8 client.
 SEARCH_ENGINE=elasticsearch
 APP_INDEX_HOSTS=<your-elasticsearch-url>

@@ -11,6 +11,7 @@ use Akeneo\Tool\Bundle\ElasticsearchBundle\IndexConfiguration\Loader;
 use Elastic\Elasticsearch\ClientInterface as NativeClient;
 use Elastic\Elasticsearch\ClientBuilder;
 use Elastic\Elasticsearch\Exception\ClientResponseException;
+use OpenSearch\Common\Exceptions\BadRequest400Exception;
 use Elastic\Elasticsearch\Response\Elasticsearch as ElasticsearchResponse;
 use Ramsey\Uuid\Uuid;
 
@@ -173,6 +174,11 @@ class Client
             } else {
                 throw $e;
             }
+        } catch (BadRequest400Exception $e) {
+            $chunkLength = intdiv($length, self::NUMBER_OF_BATCHES_ON_RETRY);
+            $chunkLength = $chunkLength % 2 == 0 ? $chunkLength : $chunkLength + 1;
+
+            $mergedResponse = $this->doChunkedBulkIndex($params, $mergedResponse, $chunkLength);
         } catch (\Exception $e) {
             throw new IndexationException($e->getMessage(), $e->getCode(), $e);
         }

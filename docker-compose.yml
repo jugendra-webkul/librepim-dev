@@ -20,13 +20,15 @@ services:
       - '${HOST_COMPOSER_HOME:-~/.composer}:/var/www/.composer'
     working_dir: '/srv/pim'
     command: 'php'
-    user: 'www-data'
+    user: '${HOST_UID}:${HOST_GID}'
     init: true
     networks:
       - 'pim'
 
   httpd:
     image: 'webkul/librepim-php-dev:8.3'
+    env_file:
+      - .env
     environment:
       APP_ENV: '${APP_ENV:-prod}'
       BEHAT_TMPDIR: '/srv/pim/var/cache/tmp'
