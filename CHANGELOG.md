@@ -1,5 +1,12 @@
 # Unreleased
 
+## Bug fixes
+
+* Fix two-way association deletion not reindexing associated product/model in Elasticsearch — added `PRE_REMOVE`/`POST_REMOVE` handlers to `PersistTwoWayAssociationSubscriber`
+* Fix saving a variant product in a two-way associated product model spuriously creating an extra association on the associated entity — `AssociationFieldSetter` and `AssociationFieldAdder` now pre-check merged (own + inherited) associations before calling `createInversedAssociation()`
+* Fix DQI Dashboard category widget showing blank scores for uppercase/mixed-case category codes — `GetAverageRanksQuery::fetchByCodes()` now preserves original-case request code as response key while using lowercase only for internal DB lookup
+* Fix DQI Dashboard family widget showing blank labels for uppercase family codes — `FindFamiliesController` now returns original-case family code; `FamilyWidget` comparison updated to case-insensitive
+
 ## CI / Infrastructure
 
 * Added GitHub Actions CI/CD workflows: automated Docker build & publish (`docker.yml`) and pull request checks for PHPSpec, CS-Fixer, and frontend lint/unit tests (`pull_request.yml`)
